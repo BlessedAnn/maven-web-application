@@ -1,0 +1,42 @@
+node{
+  def mavenHome = tool name: 'maven3.8.6'
+  stage('1cloneCode'){
+    git "https://github.com/BlessedAnn/maven-web-application.git"
+  }
+  stage('2Test&Build'){
+    sh "${mavenHome}/bin/mvn clean package"
+    //bat "${mavenHome}/bin/mvn clean package"
+  }
+  stage('3codeQuality'){
+    sh "${mavenHome}/bin/mvn  sonar:sonar"
+  }
+  stage('4uploadArtifacts'){
+    //sh "${mavenHome}/bin/mvn deploy"
+    //http://52.91.234.127:8081/repository/tesla-frontend-releases/
+    //http://52.91.234.127:8081/repository/tesla-frontend-snapshot/
+    // vi pom.xml and added repository details   
+    // vi setting.xml and add AUTHENTICATION details  
+  } 
+  stage('5deploy2UAT'){
+    sh "echo 'deploy to UAT'  "
+    deploy adapters: [tomcat8(credentialsId: '38ab0236-f210-4698-9c53-b50dfd23d6a2', path: '', url: 'http://18.212.50.229:8080/')], contextPath: null, war: 'target/*war'
+  }
+  stage('6approvalGate'){
+    sh "echo 'ready for review' "
+    timeout(time:5, unit:'DAYS') {
+    input message: 'Application ready for deployment, Please review and approve'
+      }
+  }
+  stage('7deploy2Prod'){
+    sh "sleep  50"
+     deploy adapters: [tomcat8(credentialsId: '38ab0236-f210-4698-9c53-b50dfd23d6a2', path: '', url: 'http://18.212.50.229:8080/')], contextPath: null, war: 'target/*war'
+  }
+  stage('8emailNotification'){
+    emailext body: '''Hi All,
+
+Check Build status.
+
+Landmark Technologies''', recipientProviders: [buildUser(), developers(), upstreamDevelopers(), brokenBuildSuspects(), brokenTestsSuspects(), contributor()], subject: 'build status', to: 'tesla-app@gmail.com'
+  }
+
+}
