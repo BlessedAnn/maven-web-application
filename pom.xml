@@ -93,11 +93,13 @@
 		
 	</dependencies>
 	<distributionManagement>
-	    <repository>
+	   <!--
+		<repository>
 	      <id>nexus</id>
 	      <name>Landmark Technologies Releases Nexus Repository</name>
 	      <url>http://54.147.20.79:4000/repository/ebay-mavenwebapp-releases/</url>
 	    </repository>
+		-->
 	    
 	    <snapshotRepository>
 	      <id>nexus</id>
